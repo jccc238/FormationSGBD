@@ -46,6 +46,7 @@ else
     Console.WriteLine("Aucun produit trouvé.");
 }
 */
+/*
 // 6. On teste la mise à jour d'un produitusing System
 
 // 1. Initialisation du dépôt
@@ -109,4 +110,61 @@ Console.WriteLine("Produits restants dans le magasin :");
 foreach (Product p in depot.GetAllProducts())
 {
     Console.WriteLine(p);
+}
+*/
+/*
+using Microsoft.Extensions.Configuration;
+using System;
+
+// 1. Charger le fichier appsettings.json
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(AppContext.BaseDirectory)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .Build();
+
+// 2. Récupérer la chaîne de connexion
+string? connectionString = configuration.GetConnectionString("DefaultConnection");
+
+Console.WriteLine($"Chaîne de connexion trouvée : {connectionString}");
+
+// 3. Instancier le repository ADO.NET via l'interface
+IProductRepository repository = new AdoNetProductRepository(connectionString);
+
+// 4. Tester la récupération des produits dans SQL Server
+Console.WriteLine("\n--- Lecture des produits depuis SQL Server ---");
+var products = repository.GetAllProducts();
+
+foreach (var p in products)
+{
+    Console.WriteLine($"[Id: {p.Id}] {p.Name} - {p.Price:C}");
+}
+
+Console.WriteLine("\nTest terminé avec succès !");
+*/
+using Microsoft.Extensions.Configuration;
+using System;
+
+// 1. Chargement de la configuration
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(AppContext.BaseDirectory)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .Build();
+
+// 2. Récupération de la chaîne et du type demandé
+string? connectionString = configuration.GetConnectionString("DefaultConnection");
+string repositoryTypeString = configuration.GetSection("Repository:Type").Value
+    ?? throw new InvalidOperationException("Repository type not found.");
+
+// 3. Conversion du texte du JSON vers l'Enum (Fake ou AdoNet)
+RepositoryType repositoryType = Enum.Parse<RepositoryType>(repositoryTypeString, ignoreCase: true);
+
+// 4. La Factory instancie le bon objet
+IProductRepository productRepository = ProductRepoFactory.CreateProductRepository(repositoryType, connectionString);
+
+// 5. Utilisation transparente
+Console.WriteLine($"--- Mode actif : {repositoryType} ---");
+var products = productRepository.GetAllProducts();
+foreach (var p in products)
+{
+    Console.WriteLine(p.ToString());
 }

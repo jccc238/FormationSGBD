@@ -7,7 +7,12 @@ namespace ApprentissageSGBD
     public class FakeProductRepository : IProductRepository
     {
         // Notre fausse table SQL en mémoire : une simple liste d'objets Product
-        private readonly List<Product> _products = new List<Product>();
+        private readonly List<Product> _products = new List<Product>
+        {
+            new Product { Id = 1, Name = "Product 1", Price = 10.0m },
+            new Product { Id = 2, Name = "Product 2", Price = 20.0m },
+            new Product { Id = 3, Name = "Product 3", Price = 30.0m }
+        };
 
         // Compteur simulant l'auto-incrément des identifiants (comme IDENTITY en SQL)
         private int _currentId = 1;
